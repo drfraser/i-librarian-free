@@ -288,9 +288,9 @@ UPDATE metadata
 SQL;
 
         $db->run($sql_select);
-        $page_count = $db->getResult();
+        $page_count = (int) $db->getResult();
 
-        if (empty($page_count)) {
+        if ($page_count === 0) {
 
             exec($this->binary->pdfinfo() . ' -enc "UTF-8" -f 1 -l 1 ' . escapeshellarg($this->file), $raw);
 
@@ -556,7 +556,7 @@ SQL;
         while(feof($fr) === false) {
 
             $line = fgets($fr);
-            $line = preg_replace( "/[^\p{L}\p{N}\p{P}]+/u", " ", $line);
+            $line = preg_replace( "/[^\p{L}\p{N}\p{P}\f]+/u", " ", $line);
             $line = preg_replace('/\s{2,}/u', ' ', $line);
 
             fwrite($ft, $line);
@@ -878,6 +878,11 @@ EOT;
         // Get PDF info.
         $info = $this->info(true);
 
+        if ($info['page_count'] === 0) {
+
+            return;
+        }
+
         $chunk = 50;
         $page_end = min($page_from + $chunk - 1, $info['page_count']);
 
@@ -1025,6 +1030,11 @@ EOT;
 
         // Get PDF info.
         $info = $this->info(true);
+
+        if ($info['page_count'] === 0) {
+
+            return;
+        }
 
         $page_end = min($page_from + $chunk - 1, $info['page_count']);
 

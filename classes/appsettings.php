@@ -32,6 +32,14 @@ final class AppSettings {
         'connect_sciencedirect' => '1',
         'connect_scopus'   => '1',
         'custom_filename'  => ['author', '_', 'year', '_', 'title'],
+        'dashboard_remove_search' => '0',
+        'dashboard_remove_stats' => '0',
+        'dashboard_remove_items' => '0',
+        'dashboard_remove_projects' => '0',
+        'dashboard_remove_item_notes' => '0',
+        'dashboard_remove_project_notes' => '0',
+        'dashboard_remove_item_discussions' => '0',
+        'dashboard_remove_project_discussions' => '0',
         'display_type'     => 'title',
         'icons_per_row'    => 'auto',
         'page_size'        => '10',
@@ -62,6 +70,7 @@ final class AppSettings {
         'custom_bibtex'       => ['author', '-', 'year', '-', 'title'],
         'default_permissions' => 'A',
         'disallow_signup'     => '0',
+        'math_formatting'     => '0',
         'max_items'           => '10000',
         'proxy_name'          => '',
         'proxy_port'          => '',
@@ -245,7 +254,11 @@ final class AppSettings {
             if (!isset($this->settings['global'][$name])) {
 
                 // A new setting, delete stale settings.json, sign the user out.
-                unlink(IL_TEMP_PATH . DIRECTORY_SEPARATOR . 'settings.json');
+                if (is_writable(IL_TEMP_PATH . DIRECTORY_SEPARATOR . 'settings.json') === true) {
+
+                    unlink(IL_TEMP_PATH . DIRECTORY_SEPARATOR . 'settings.json');
+                }
+
                 throw new Exception("you will be signed out to experience upgraded I, Librarian", 401);
             }
 

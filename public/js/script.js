@@ -1650,6 +1650,9 @@ class View {
             // Inject HTML.
             $par.html(data.html);
             this.delegateEvents();
+            if (typeof window.MathJax.typeset === 'function') {
+                window.MathJax.typeset();
+            }
             this.afterRender(data);
         }
         // Hide modals.
@@ -1677,6 +1680,9 @@ class View {
         }
         // Form beautification.
         formStyle.init();
+        if (typeof window.MathJax.typeset === 'function') {
+            window.MathJax.typeset();
+        }
         this.afterRender();
     }
     /**
@@ -2631,6 +2637,9 @@ class SummaryMainView extends View {
                 let $f = $('#note-form');
                 $.when(model.save({url: $f.attr('action'), data: $f.serialize()})).done(function () {
                     $('#user-note').html(editor.getContent());
+                    if (typeof window.MathJax.typeset === 'function') {
+                        window.MathJax.typeset();
+                    }
                 });
             },
             image_description: false,
@@ -2903,7 +2912,7 @@ class SupplementsMainView extends View {
         // Delete file button.
         $('.delete-file').confirmable({
             submit: function () {
-                let file = $.trim($(this).parent().find('.filename-link').text()),
+                let file = $(this).closest('li').find('.filename-link').text().trim(),
                     itemId = $('body').data('id');
                 $.when(model.save({
                     url: window.IL_BASE_URL + 'index.php/supplements/delete',
@@ -2918,9 +2927,8 @@ class SupplementsMainView extends View {
         });
     }
     renameFile() {
-        let $l = $(this).parent().find('.filename-link'),
-            $i = $(this).parent().find('input'),
-            $dl = $(this).parent().find('.download');
+        let $l = $(this).closest('li').find('.filename-link'),
+            $i = $(this).closest('li').find('input');
         if ($l.hasClass('d-none')) {
             // Submit.
             let filename = $.trim($l.text()), newname = $.trim($i.val());
@@ -3003,6 +3011,10 @@ class PdfMainView extends View {
         }, 500, {leading: true, trailing: true});
     }
     afterRender(data) {
+        // No PDF.
+        if ($('#pdfviewer-pages').length === 0) {
+            return;
+        }
         let This = this;
         formStyle.init();
         $('#content-col').find('[data-toggle="tooltip"]').tooltip();
@@ -3056,10 +3068,12 @@ class PdfMainView extends View {
                         $('.pdfviewer-right')[0].getBoundingClientRect()
                     );
                 });
+                // Refresh text box coordinates.
+                if (typeof This.selectable === 'object') {
+                    This.selectable.refresh();
+                }
             }, 400));
         });
-        // Initial page number.
-        this.scrollToPage($('#pdfviewer-page-input').val(), 0);
         if (typeof This.selectable === 'object') {
             This.selectable.disable();
             This.selectable.destroy();
@@ -3075,6 +3089,9 @@ class PdfMainView extends View {
             e.which = 13;
             $('#pdfviewer-search-input').val(params.get('search')).trigger(e);
         }
+        // Initial page number.
+        let initialPage = params.get('page') || $('#pdfviewer-page-input').val();
+        this.scrollToPage(initialPage, 0);
         this.getLinks();
     }
     /**
@@ -3796,7 +3813,13 @@ class PdfMainView extends View {
                 $con.append(boxes);
             });
             $('.pdfnote').tooltip({
+                animation: false,
                 template: '<div class="tooltip" role="tooltip"><div class="tooltip-inner bg-secondary rounded-0 text-left px-3 py-2 border border-light"></div></div>'
+            }).on('shown.bs.tooltip', function () {
+                if (typeof window.MathJax.typeset === 'function') {
+                    window.MathJax.typeset();
+                }
+                $(this).tooltip('update');
             });
             $('#pdfviewer-notes').on('click', '.note-btn', function () {
                 let noteId = $(this).data('id');
@@ -3804,7 +3827,7 @@ class PdfMainView extends View {
                 $('.note-btn').removeClass('active');
                 $(this).addClass('active');
                 $('.pdfnote').removeClass('active').tooltip('hide');
-                $('#pdfnote-' + noteId).addClass('active');//.tooltip('show');
+                $('#pdfnote-' + noteId).addClass('active');
             });
             $('.pdfnote').on('click', function () {
                 let noteId = $(this).data('id');
@@ -3813,6 +3836,9 @@ class PdfMainView extends View {
                 $('.note-btn').removeClass('active');
                 $('#pdfviewer-notes').find('.note-btn[data-id="' + noteId + '"]').addClass('active');
             });
+            if (typeof window.MathJax.typeset === 'function') {
+                window.MathJax.typeset();
+            }
         });
     }
     /**
@@ -3836,28 +3862,35 @@ class PdfMainView extends View {
                 This.showNotes(e);
             } else {
                 $f.prev().removeClass('d-none').find('button').eq(0).text(note);
-                $('#pdfnote-' + noteId).attr('title', note).attr('data-original-title', note);
+                $('#pdfnote-' + noteId).attr('data-title', note).attr('data-original-title', note);
+                if (typeof window.MathJax.typeset === 'function') {
+                    window.MathJax.typeset();
+                }
             }
         });
     }
     createNewNote(e) {
         let This = e.data.object;
-        This.clearHighlights(e);
-        This.showNotes(e);
-        This.showLeft();
-        $('.pdfviewer-page').addClass('cursor-cross');
-        $('.pdfviewer-page').on('click.createnote', '.pdfviewer-notes', function (e) {
-            let left = Math.round(1000 * (e.pageX - $(this).offset().left)/$(this).width()),
-                top = Math.round(1000 * (e.pageY - $(this).offset().top)/$(this).height()),
-                pg = $(this).closest('.pdfviewer-page').data('page'),
-                $f = $('#new-note-form');
-            $f.removeClass('d-none').find('[name="pg"]').val(pg);
-            $f.find('[name="left"]').val(left);
-            $f.find('[name="top"]').val(top);
-            $('.pdfnote.new').remove();
-            $('<div class="pdfnote new" style="left:' + left/10 + '%;top:' + top/10 + '%;"></div>').appendTo(this);
+        if ($('.pdfviewer-page').hasClass('cursor-cross') === true) {
             This.clearNewNote();
-        });
+        } else {
+            This.clearHighlights(e);
+            This.showNotes(e);
+            This.showLeft();
+            $('.pdfviewer-page').addClass('cursor-cross');
+            $('.pdfviewer-page').on('click.createnote', '.pdfviewer-notes', function (e) {
+                let left = Math.round(1000 * (e.pageX - $(this).offset().left) / $(this).width()),
+                    top = Math.round(1000 * (e.pageY - $(this).offset().top) / $(this).height()),
+                    pg = $(this).closest('.pdfviewer-page').data('page'),
+                    $f = $('#new-note-form');
+                $f.removeClass('d-none').find('[name="pg"]').val(pg);
+                $f.find('[name="left"]').val(left);
+                $f.find('[name="top"]').val(top);
+                $('.pdfnote.new').remove();
+                $('<div class="pdfnote new" style="left:' + left / 10 + '%;top:' + top / 10 + '%;"></div>').appendTo(this);
+                This.clearNewNote();
+            });
+        }
     }
     clearNotes(e) {
         let This = e.data.object;
@@ -4876,6 +4909,9 @@ class ProjectView {
                 let $f = $('#note-form');
                 $.when(model.save({url: $f.attr('action'), data: $f.serialize()})).done(function () {
                     $('#user-note').html(editor.getContent());
+                    if (typeof window.MathJax.typeset === 'function') {
+                        window.MathJax.typeset();
+                    }
                 });
             },
             image_description: false,

@@ -21,6 +21,36 @@ class PdfViewerView extends TextView {
 
         $this->title('PDF - ' . $info['title']);
 
+        // No PDF.
+        if (array_key_exists('page_count', $info['info']) === false) {
+
+            /** @var Bootstrap\Alert $el */
+            $el = $this->di->get('Alert');
+
+            $el->style('margin: 5rem 25%');
+            $el->context('primary');
+            $el->html('There is no PDF.');
+            $alert = $el->render();
+
+            $el = null;
+
+            if ($this->contentType() === 'html') {
+
+                $this->styleLink('css/plugins.css');
+                $this->head();
+                $this->append($alert);
+                $this->scriptLink('js/plugins.js');
+                $this->end();
+
+            } elseif ($this->contentType() === 'json') {
+
+                $this->head();
+                $this->append(['html' => $alert]);
+            }
+
+            return $this->send();
+        }
+
         // Left panel toggle.
 
         /** @var Bootstrap\IconButton $el */
@@ -626,7 +656,7 @@ EOT;
                 continue;
             }
 
-            foreach ($words as $word) {
+            foreach ($words as $key => $word) {
 
                 $t = $word['marker_top'] / 10;
                 $l = $word['marker_left'] / 10;
@@ -634,6 +664,14 @@ EOT;
                 $h = $word['marker_height'] / 10;
                 $position = $word['marker_position'];
                 $text = $this->sanitation->attr($word['marker_text']);
+
+                // Adjust width to not have seams.
+                if (isset($words[($key + 1)]) &&
+                    (int) $words[($key + 1)]['marker_position'] === ((int) $position + 1) &&
+                    $words[($key + 1)]['marker_top'] === $word['marker_top']) {
+
+                    $w = ($words[($key + 1)]['marker_left'] - $word['marker_left']) / 10;
+                }
 
                 switch ($word['marker_color']) {
 

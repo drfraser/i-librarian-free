@@ -621,10 +621,168 @@ class SettingsView extends TextView {
         $el = null;
 
         /*
+         * Customize dashboard.
+         */
+
+        $radios_l .= '<div class="mt-3 mb-2"><strong>Hide dashboard panels</strong></div>';
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-search');
+        $el->name('settings[dashboard_remove_search]');
+        $el->value('1');
+        $el->label('search');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_search']) && $user_settings['dashboard_remove_search'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-stats');
+        $el->name('settings[dashboard_remove_stats]');
+        $el->value('1');
+        $el->label('stats');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_stats']) && $user_settings['dashboard_remove_stats'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render() . '<br>';
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-items');
+        $el->name('settings[dashboard_remove_items]');
+        $el->value('1');
+        $el->label('items');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_items']) && $user_settings['dashboard_remove_items'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-item-notes');
+        $el->name('settings[dashboard_remove_item_notes]');
+        $el->value('1');
+        $el->label('item notes');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_item_notes']) && $user_settings['dashboard_remove_item_notes'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-item-discussions');
+        $el->name('settings[dashboard_remove_item_discussions]');
+        $el->value('1');
+        $el->label('item discussions');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_item_discussions']) && $user_settings['dashboard_remove_item_discussions'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render() . '<br>';
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-projects');
+        $el->name('settings[dashboard_remove_projects]');
+        $el->value('1');
+        $el->label('projects');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_projects']) && $user_settings['dashboard_remove_projects'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-project-notes');
+        $el->name('settings[dashboard_remove_project_notes]');
+        $el->value('1');
+        $el->label('project notes');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_project_notes']) && $user_settings['dashboard_remove_project_notes'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('checkbox');
+        $el->id('dashboard-project-discussions');
+        $el->name('settings[dashboard_remove_project_discussions]');
+        $el->value('1');
+        $el->label('project discussions');
+        $el->inline(true);
+
+        if (isset($user_settings['dashboard_remove_project_discussions']) && $user_settings['dashboard_remove_project_discussions'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $radios_l .= $el->render();
+
+        $el = null;
+
+        /*
          * Connect to databases.
          */
 
-        $radios_r = '<div class="mt-3"><strong>Connect to external databases</strong></div>';
+        $radios_r = '<div class="mt-3 mb-2"><strong>Connect to external databases</strong></div>';
 
         /** @var Bootstrap\Input $el */
         $el = $this->di->get('Input');
@@ -1495,6 +1653,46 @@ class SettingsView extends TextView {
 
         $el = null;
 
+        $options_left .= '<div class="mt-3 mb-2"><strong>Math display formatting</strong></div>';
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('radio');
+        $el->inline(true);
+        $el->id('math-formatting-allow');
+        $el->name('settings[math_formatting]');
+        $el->value('1');
+        $el->label('on');
+
+        if (isset($settings['math_formatting']) && $settings['math_formatting'] === '1') {
+
+            $el->checked('checked');
+        }
+
+        $options_left .= $el->render();
+
+        $el = null;
+
+        /** @var Bootstrap\Input $el */
+        $el = $this->di->get('Input');
+
+        $el->type('radio');
+        $el->inline(true);
+        $el->id('math-formatting-disallow');
+        $el->name('settings[math_formatting]');
+        $el->value('0');
+        $el->label('off');
+
+        if (!isset($settings['math_formatting']) || isset($settings['math_formatting']) && $settings['math_formatting'] === '0') {
+
+            $el->checked('checked');
+        }
+
+        $options_left .= $el->render();
+
+        $el = null;
+
         /** @var Bootstrap\Input $el */
         $el = $this->di->get('Input');
 
@@ -1509,7 +1707,7 @@ class SettingsView extends TextView {
             $el->value($settings['soffice_path']);
         }
 
-        $options_left .= $el->render();
+        $options_right = $el->render();
 
         $el = null;
 
@@ -1526,7 +1724,7 @@ class SettingsView extends TextView {
             $el->value($settings['tesseract_path']);
         }
 
-        $options_left .= $el->render();
+        $options_right .= $el->render();
 
         $el = null;
 
@@ -1544,7 +1742,7 @@ class SettingsView extends TextView {
             $el->value($settings['api_crossref']);
         }
 
-        $options_right = $el->render();
+        $options_right .= $el->render();
 
         $el = null;
 
